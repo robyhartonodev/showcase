@@ -16,22 +16,23 @@ import org.springframework.stereotype.Service;
 import com.roby.showcase.model.User;
 import com.roby.showcase.repository.UserRepository;
 
-
 @Service
 @Transactional
 public class CustomUserDetailsService implements UserDetailsService {
 	@Autowired
 	private UserRepository userRepository;
-	
 
+	/**
+	 * Find user based on email and populate the authentication object
+	 */
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		// Create an user instance / object based on the username
-		User user = userRepository.findByUsername(username).orElse(null);
+	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+		// Create an user instance / object based on the email
+		User user = userRepository.findByEmail(email).orElse(null);
 
 		// If user not found then throw the exception
 		if (user == null) {
-			throw new UsernameNotFoundException(username);
+			throw new UsernameNotFoundException(email);
 		}
 
 		// Setting authority for the user

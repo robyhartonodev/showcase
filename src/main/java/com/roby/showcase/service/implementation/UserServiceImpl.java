@@ -1,8 +1,10 @@
 package com.roby.showcase.service.implementation;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.roby.showcase.model.User;
@@ -15,6 +17,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	@Override
 	public List<User> getAllUsers() {
@@ -50,6 +55,39 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void deleteUser(Integer id) {
 		userRepository.deleteById(id);
+	}
+
+	public void addUserPasswordHashed(User user) {
+		// hash the password before sending it 
+		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		userRepository.save(user);
+	}
+
+	public User createOrUpdateUser(User userEntity) {
+		if (userEntity.getId() == null) {
+			userEntity = userRepository.save(userEntity);
+
+			return userEntity;
+		} else {
+			Optional<User> user = userRepository.findById(userEntity.getId());
+
+			if (user.isPresent()) {
+				User newEntity = user.get();
+
+				newEntity.setEmail(userEntity.getEmail());
+				newEntity.setUsername(userEntity.getUsername());
+				newEntity.setPassword(userEntity.getPassword());
+				newEntity.setRole(userEntity.getRole());
+
+				newEntity = userRepository.save(newEntity);
+
+				return newEntity;
+			} else {
+				userEntity = userRepository.save(userEntity);
+
+				return userEntity;
+			}
+		}
 	}
 
 }
